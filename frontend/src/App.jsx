@@ -200,7 +200,7 @@ export default function App() {
     try {
 
       const res = await fetch(
-        "http://127.0.0.1:8000/signup",
+        "https://moodsync-ai-gnuv.onrender.com/signup",
         {
           method: "POST",
 
@@ -250,7 +250,7 @@ export default function App() {
     try {
 
       const res = await fetch(
-        "http://127.0.0.1:8000/login",
+        "https://moodsync-ai-gnuv.onrender.com/login",
         {
           method: "POST",
 

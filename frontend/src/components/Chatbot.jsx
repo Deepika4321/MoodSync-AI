@@ -1292,7 +1292,7 @@ export default function Chatbot({ emotionData }) {
 
                 const response =
                     await fetch(
-                        "http://127.0.0.1:8000/chat",
+                        "https://moodsync-ai-gnuv.onrender.com/chat",
                         {
                             method: "POST",
                             headers: {
@@ -1470,7 +1470,7 @@ export default function Chatbot({ emotionData }) {
 
                 const response =
                     await fetch(
-                        "http://127.0.0.1:8000/chat",
+                        "https://moodsync-ai-gnuv.onrender.com/chat",
                         {
                             method: "POST",
                             headers: {
