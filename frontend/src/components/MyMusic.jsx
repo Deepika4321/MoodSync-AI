@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 export default function MyMusic({
   userName,
   spotifyToken,
@@ -11,14 +10,13 @@ export default function MyMusic({
 
   // ============================================================
   // LOAD MOODSYNC PLAYLISTS
-  // ============================================================
 
+  // ============================================================
   const loadPlaylists = () => {
     try {
       const saved = JSON.parse(
         localStorage.getItem("moodsync_playlists") || "[]"
       );
-
       if (Array.isArray(saved)) {
         setPlaylists(saved);
       } else {
@@ -29,27 +27,22 @@ export default function MyMusic({
       setPlaylists([]);
     }
   };
-
   useEffect(() => {
     loadPlaylists();
-
     // Listen for playlists created inside the app
     const handlePlaylistCreated = () => {
       loadPlaylists();
     };
-
     window.addEventListener(
       "moodsync:playlist-created",
       handlePlaylistCreated
     );
-
     // Listen for localStorage changes
     const handleStorage = (event) => {
       if (event.key === "moodsync_playlists") {
         loadPlaylists();
       }
     };
-
     window.addEventListener("storage", handleStorage);
 
     return () => {
@@ -57,41 +50,53 @@ export default function MyMusic({
         "moodsync:playlist-created",
         handlePlaylistCreated
       );
-
       window.removeEventListener("storage", handleStorage);
     };
   }, []);
 
   // ============================================================
   // SPOTIFY STATUS
+
   // ============================================================
 
-  const isSpotifyConnected =
-    spotifyConnected ||
-    !!spotifyToken ||
-    !!spotifySession;
+  // A Spotify connection requires both the access token and backend session ID.
+  const isSpotifyConnected = Boolean(spotifyConnected && spotifyToken && spotifySession);
+
+  const handleSpotifyConnect = () => {
+    // Clear stale credentials before starting a fresh Spotify authorization.
+    try {
+      localStorage.removeItem("spotify_access_token");
+      localStorage.removeItem("spotify_session");
+    } catch (error) {
+      console.error("Could not clear old Spotify session:", error);
+    }
+    // Spotify's backend login route redirects to the Spotify authorization page.
+    window.location.assign(
+      "https://moodsync-ai-gnuv.onrender.com/spotify/login"
+    );
+  };
 
   // ============================================================
   // OPEN SPOTIFY PLAYLIST
+
   // ============================================================
 
   const openSpotifyPlaylist = (url) => {
     if (!url) {
       return;
     }
-
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   // ============================================================
   // FORMAT DATE
+
   // ============================================================
 
   const formatDate = (date) => {
     if (!date) {
       return "Recently created";
     }
-
     try {
       return new Date(date).toLocaleDateString("en-IN", {
         day: "numeric",
@@ -105,11 +110,11 @@ export default function MyMusic({
 
   // ============================================================
   // MOOD ICON
+
   // ============================================================
 
   const getMoodIcon = (mood) => {
     const value = (mood || "").toLowerCase().trim();
-
     if (value === "happy") return "😊";
     if (value === "sad") return "😔";
     if (value === "angry") return "😠";
@@ -120,78 +125,71 @@ export default function MyMusic({
     if (value === "stressed") return "😮‍💨";
     if (value === "relaxed") return "😌";
     if (value === "neutral") return "😐";
-
     return "🎵";
   };
 
   // ============================================================
   // MOOD NAME
+
   // ============================================================
 
   const getMoodName = (mood) => {
     if (!mood) {
       return "Mood";
     }
-
     return mood.charAt(0).toUpperCase() + mood.slice(1);
   };
 
   // ============================================================
   // SOURCE ICON
+
   // ============================================================
 
   const getSourceIcon = (source) => {
     const value = (source || "").toLowerCase();
-
     if (
       value.includes("camera") ||
       value.includes("detection")
     ) {
       return "📷";
     }
-
     if (value.includes("voice")) {
       return "🎙️";
     }
-
     if (value.includes("chat")) {
       return "💬";
     }
-
     return "🧠";
   };
 
   // ============================================================
   // SOURCE NAME
+
   // ============================================================
 
   const getSourceName = (source) => {
     if (!source) {
       return "MoodSync";
     }
-
     const value = source.toLowerCase();
-
     if (
       value.includes("camera") ||
       value.includes("detection")
     ) {
       return "Camera Detection";
     }
-
     if (value.includes("voice")) {
       return "Voice";
     }
-
     if (value.includes("chat")) {
       return "Conversation";
     }
-
     return "MoodSync";
   };
 
   // ============================================================
   // REMOVE DUPLICATES
+
   // ============================================================
 
   const uniquePlaylists = playlists.filter(
@@ -208,7 +206,6 @@ export default function MyMusic({
             item.id ||
             item.spotifyUrl ||
             `${item.name}-${item.createdAt}`;
-
           return itemIdentifier === identifier;
         })
       );
@@ -217,15 +214,14 @@ export default function MyMusic({
 
   // ============================================================
   // UI
+
   // ============================================================
 
   return (
     <div className="min-h-screen bg-[#F5EFE6]">
-
       {/* ======================================================
           MAIN CONTENT
       ====================================================== */}
-
       <div className="
         w-full
         max-w-6xl
@@ -236,11 +232,9 @@ export default function MyMusic({
         py-8
         lg:py-10
       ">
-
         {/* ======================================================
             HEADER
         ====================================================== */}
-
         <div className="
           flex
           items-center
@@ -248,9 +242,7 @@ export default function MyMusic({
           gap-5
           mb-8
         ">
-
           <div className="flex items-center gap-4">
-
             <button
               onClick={onBack}
               className="
@@ -276,15 +268,12 @@ export default function MyMusic({
             >
               ←
             </button>
-
             <div>
-
               <div className="
                 flex
                 items-center
                 gap-3
               ">
-
                 <h1 className="
                   text-3xl
                   sm:text-4xl
@@ -295,16 +284,13 @@ export default function MyMusic({
                 ">
                   My Music
                 </h1>
-
                 <span className="
                   text-3xl
                   sm:text-4xl
                 ">
                   🎵
                 </span>
-
               </div>
-
               <p className="
                 text-gray-500
                 mt-1
@@ -313,18 +299,12 @@ export default function MyMusic({
               ">
                 Your personalized MoodSync music space.
               </p>
-
             </div>
-
           </div>
-
         </div>
-
-
         {/* ======================================================
             SPOTIFY STATUS
         ====================================================== */}
-
         <div className="
           bg-white
           rounded-2xl
@@ -336,7 +316,6 @@ export default function MyMusic({
           py-5
           mb-10
         ">
-
           <div className="
             flex
             flex-col
@@ -345,13 +324,11 @@ export default function MyMusic({
             sm:justify-between
             gap-4
           ">
-
             <div className="
               flex
               items-center
               gap-4
             ">
-
               <div className="
                 w-12
                 h-12
@@ -365,9 +342,7 @@ export default function MyMusic({
               ">
                 🎧
               </div>
-
               <div>
-
                 <h2 className="
                   text-lg
                   font-bold
@@ -375,7 +350,6 @@ export default function MyMusic({
                 ">
                   Spotify
                 </h2>
-
                 <p className="
                   text-sm
                   text-gray-500
@@ -386,48 +360,39 @@ export default function MyMusic({
                     : "Connect Spotify to create MoodSync playlists."
                   }
                 </p>
-
               </div>
-
             </div>
-
-
-            <div
-              className={
-                "inline-flex items-center gap-2 self-start sm:self-auto px-4 py-2 rounded-full text-sm font-semibold " +
-                (isSpotifyConnected
-                  ? "bg-green-50 text-green-700"
-                  : "bg-orange-50 text-orange-700")
-              }
-            >
-
-              <span className="w-2 h-2 rounded-full bg-current" />
-
-              <span>
-                {isSpotifyConnected
-                  ? "Connected"
-                  : "Not Connected"}
-              </span>
-
+            <div className="flex flex-wrap items-center gap-3 self-start sm:self-auto">
+              <div
+                className={
+                  "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold " +
+                  (isSpotifyConnected
+                    ? "bg-green-50 text-green-700"
+                    : "bg-orange-50 text-orange-700")
+                }
+              >
+                <span className="w-2 h-2 rounded-full bg-current" />
+                <span>{isSpotifyConnected ? "Connected" : "Not Connected"}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleSpotifyConnect}
+                className="rounded-xl bg-[#1DB954] hover:bg-[#169c46] text-white px-5 py-2.5 font-semibold text-sm transition-colors"
+              >
+                {isSpotifyConnected ? "Reconnect Spotify" : "Connect Spotify"}
+              </button>
             </div>
-
           </div>
-
         </div>
-
-
         {/* ======================================================
             PLAYLIST SECTION HEADER
         ====================================================== */}
-
         <div className="mb-5">
-
           <div className="
             flex
             items-center
             gap-3
           ">
-
             <h2 className="
               text-2xl
               sm:text-3xl
@@ -436,7 +401,6 @@ export default function MyMusic({
             ">
               Your Mood Playlists
             </h2>
-
             {uniquePlaylists.length > 0 && (
               <span className="
                 inline-flex
@@ -454,9 +418,7 @@ export default function MyMusic({
                 {uniquePlaylists.length}
               </span>
             )}
-
           </div>
-
           <p className="
             text-gray-500
             mt-1
@@ -465,16 +427,11 @@ export default function MyMusic({
           ">
             Playlists created by MoodSync for your moods.
           </p>
-
         </div>
-
-
         {/* ======================================================
             EMPTY STATE
         ====================================================== */}
-
         {uniquePlaylists.length === 0 && (
-
           <div className="
             bg-white
             rounded-3xl
@@ -485,7 +442,6 @@ export default function MyMusic({
             py-14
             text-center
           ">
-
             <div className="
               w-20
               h-20
@@ -499,7 +455,6 @@ export default function MyMusic({
             ">
               🎵
             </div>
-
             <h3 className="
               text-2xl
               font-bold
@@ -508,7 +463,6 @@ export default function MyMusic({
             ">
               No MoodSync playlists yet
             </h3>
-
             <p className="
               max-w-xl
               mx-auto
@@ -523,7 +477,6 @@ export default function MyMusic({
               camera. When you ask for music, your playlist
               will appear here.
             </p>
-
             <div className="
               mt-6
               inline-flex
@@ -545,34 +498,24 @@ export default function MyMusic({
               <span className="text-gray-400">→</span>
               🎵 Playlist
             </div>
-
           </div>
-
         )}
-
-
         {/* ======================================================
             PLAYLIST CARDS
         ====================================================== */}
-
         {uniquePlaylists.length > 0 && (
-
           <div className="
             grid
             grid-cols-1
             md:grid-cols-2
             gap-6
           ">
-
             {uniquePlaylists.map(
               (playlist, index) => {
-
                 const moodIcon =
                   getMoodIcon(playlist.mood);
-
                 const moodName =
                   getMoodName(playlist.mood);
-
                 const source =
                   playlist.source ||
                   playlist.createdFrom ||
@@ -580,7 +523,6 @@ export default function MyMusic({
                   "";
 
                 return (
-
                   <div
                     key={
                       playlist.id ||
@@ -601,18 +543,14 @@ export default function MyMusic({
                       overflow-hidden
                     "
                   >
-
                     {/* CARD TOP */}
-
                     <div className="p-6">
-
                       <div className="
                         flex
                         items-start
                         justify-between
                         gap-4
                       ">
-
                         <div className="
                           w-16
                           h-16
@@ -636,12 +574,8 @@ export default function MyMusic({
                         ">
                           {formatDate(playlist.createdAt)}
                         </span>
-
                     </div>
-
-
                       {/* TITLE */}
-
                       <h3 className="
                         text-xl
                         font-bold
@@ -654,10 +588,7 @@ export default function MyMusic({
                           `${moodName} Mood Playlist`
                         } 🎵
                       </h3>
-
-
                       {/* MOOD BADGE */}
-
                       <div className="
                         mt-3
                         inline-flex
@@ -671,20 +602,14 @@ export default function MyMusic({
                         text-xs
                         font-semibold
                       ">
-
                         <span>
                           {moodIcon}
                         </span>
-
                         <span>
                           {moodName} mood
                         </span>
-
                       </div>
-
-
                       {/* DETAILS */}
-
                       <div className="
                         mt-6
                         pt-5
@@ -692,28 +617,22 @@ export default function MyMusic({
                         border-[#F0E8DF]
                         space-y-4
                       ">
-
                         <div className="
                           flex
                           items-center
                           justify-between
                           text-sm
                         ">
-
                           <span className="text-gray-500">
                             🎵 Songs
                           </span>
-
                           <span className="
                             font-semibold
                             text-[#4B3425]
                           ">
                             {playlist.songs ?? 0}
                           </span>
-
                         </div>
-
-
                         <div className="
                           flex
                           items-center
@@ -721,11 +640,9 @@ export default function MyMusic({
                           text-sm
                           gap-3
                         ">
-
                           <span className="text-gray-500">
                             Created through
                           </span>
-
                           <span className="
                             text-[#4B3425]
                             font-medium
@@ -734,21 +651,14 @@ export default function MyMusic({
                             {getSourceIcon(source)}{" "}
                             {getSourceName(source)}
                           </span>
-
                         </div>
-
                       </div>
-
                     </div>
-
-
                     {/* OPEN SPOTIFY */}
-
                     <div className="
                       px-6
                       pb-6
                     ">
-
                       <button
                         onClick={() =>
                           openSpotifyPlaylist(
@@ -779,7 +689,6 @@ export default function MyMusic({
                           hover:shadow-md
                         "
                       >
-
                         {playlist.spotifyUrl ? (
                           <>
                             Open in Spotify
@@ -788,26 +697,17 @@ export default function MyMusic({
                         ) : (
                           "Spotify Link Unavailable"
                         )}
-
                       </button>
-
                     </div>
-
                   </div>
-
                 );
               }
             )}
-
           </div>
-
         )}
-
-
         {/* ======================================================
             HOW IT WORKS
         ====================================================== */}
-
         <div className="
           mt-10
           bg-[#4B3425]
@@ -817,17 +717,14 @@ export default function MyMusic({
           sm:p-8
           shadow-lg
         ">
-
           <div className="
             flex
             items-center
             gap-3
           ">
-
             <span className="text-2xl">
               ✨
             </span>
-
             <h2 className="
               text-xl
               sm:text-2xl
@@ -835,10 +732,7 @@ export default function MyMusic({
             ">
               How MoodSync Music Works
             </h2>
-
           </div>
-
-
           <div className="
             grid
             grid-cols-1
@@ -846,41 +740,34 @@ export default function MyMusic({
             gap-4
             mt-6
           ">
-
             <MusicStep
               number="01"
               icon="💬"
               title="Talk to MoodSync"
               text="Share how you're feeling through chat or voice."
             />
-
             <MusicStep
               number="02"
               icon="🧠"
               title="Understand Your Mood"
               text="MoodSync understands your conversation or optional camera-based mood detection."
             />
-
             <MusicStep
               number="03"
               icon="🎵"
               title="Create Your Playlist"
               text="Ask for music when you're ready and MoodSync creates a Spotify playlist matching your mood."
             />
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }
 
-
 // ============================================================
 // MUSIC STEP
+
 // ============================================================
 
 function MusicStep({
@@ -889,6 +776,7 @@ function MusicStep({
   title,
   text,
 }) {
+
   return (
     <div className="
       bg-white/10
@@ -899,13 +787,11 @@ function MusicStep({
       hover:bg-white/[0.14]
       transition
     ">
-
       <div className="
         flex
         items-center
         justify-between
       ">
-
         <span className="
           text-xs
           font-bold
@@ -913,14 +799,10 @@ function MusicStep({
         ">
           {number}
         </span>
-
         <span className="text-2xl">
           {icon}
         </span>
-
       </div>
-
-
       <h3 className="
         font-semibold
         text-lg
@@ -928,8 +810,6 @@ function MusicStep({
       ">
         {title}
       </h3>
-
-
       <p className="
         text-sm
         text-white/70
@@ -938,7 +818,6 @@ function MusicStep({
       ">
         {text}
       </p>
-
     </div>
   );
 }
