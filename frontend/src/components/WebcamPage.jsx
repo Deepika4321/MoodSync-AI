@@ -152,7 +152,7 @@ export default function WebcamPage() {
 
             // Ask backend for a fresh Spotify access token
             const response = await fetch(
-                "https://moodsync-ai-gnuv.onrender.com/spotify/refresh",,
+                "https://moodsync-ai-gnuv.onrender.com/spotify/refresh",
                 {
                     method: "POST",
 
@@ -899,7 +899,7 @@ export default function WebcamPage() {
             const response =
                 await fetch(
 
-                    "https://moodsync-ai-gnuv.onrender.com/detect-emotion",,
+                    "https://moodsync-ai-gnuv.onrender.com/detect-emotion",
 
                     {
 
