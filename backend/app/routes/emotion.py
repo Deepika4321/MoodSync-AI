@@ -12,15 +12,7 @@ router = APIRouter()
 # PRELOAD DEEPFACE EMOTION MODEL
 # =========================================================
 
-try:
-    print("Loading DeepFace emotion model...")
 
-    DeepFace.build_model("Emotion")
-
-    print("DeepFace emotion model loaded successfully.")
-
-except Exception as e:
-    print("WARNING: Could not preload emotion model:", e)
 
 
 # =========================================================
@@ -158,7 +150,7 @@ async def detect_emotion(request: Request):
                 img_path=img,
                 actions=["emotion"],
                 detector_backend="opencv",
-                enforce_detection=True,
+                enforce_detection=False,
                 align=True,
                 silent=True
             )
@@ -179,8 +171,8 @@ async def detect_emotion(request: Request):
                 result = DeepFace.analyze(
                     img_path=img,
                     actions=["emotion"],
-                    detector_backend="retinaface",
-                    enforce_detection=True,
+                    detector_backend="opencv",
+                    enforce_detection=False,
                     align=True,
                     silent=True
                 )
