@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/spotify/callback",
+      "destination": "https://moodsync-ai-gnuv.onrender.com/spotify/callback"
+    }
+  ]
+}
