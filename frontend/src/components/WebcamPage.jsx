@@ -386,6 +386,11 @@ export default function WebcamPage() {
         requestedMood = ""
     ) => {
 
+        // Keep a popup handle so the browser allows opening Spotify after
+        // the asynchronous API requests finish. Opening a new tab only at
+        // the end of this function is often blocked by popup protection.
+        let spotifyWindow = null;
+
         // IMPORTANT: The caller decides which mood source to use.
         // Facial Scan passes emotionData?.emotion explicitly.
         // Text/Voice passes cardConversationMood explicitly.
@@ -413,6 +418,36 @@ export default function WebcamPage() {
                 Number(requestedSongCount) || 1
             )
         );
+
+        // Open a tab synchronously from the user's playlist button click.
+        // The playlist URL is not known until Spotify's async requests finish.
+        // Only open a tab when a Spotify token/session exists, avoiding a
+        // stray blank tab when Spotify has not been authorized on this browser.
+        const hasSpotifyAuth = Boolean(
+            localStorage.getItem("spotify_session") ||
+            localStorage.getItem("spotify_access_token")
+        );
+
+        if (hasSpotifyAuth) {
+            try {
+                spotifyWindow = window.open("about:blank", "_blank");
+
+                if (spotifyWindow) {
+                    // Prevent the opened tab from accessing this app's window.
+                    spotifyWindow.opener = null;
+                    spotifyWindow.document.title = "MoodSync - Creating playlist";
+                    spotifyWindow.document.body.innerHTML = `
+                        <main style="font-family:Arial,sans-serif;padding:40px;color:#4B3425;text-align:center">
+                            <h2>🎵 Creating your MoodSync playlist...</h2>
+                            <p>Spotify will open automatically when your playlist is ready.</p>
+                        </main>
+                    `;
+                }
+            } catch (popupError) {
+                console.warn("Could not prepare Spotify tab:", popupError);
+                spotifyWindow = null;
+            }
+        }
 
         setPlaylistLoading(true);
         setPlaylistCreated(null);
@@ -784,22 +819,35 @@ export default function WebcamPage() {
                 `${trackUris.length} songs added.`
             );
 
-            if (
-                playlist
-                    ?.external_urls
-                    ?.spotify
-            ) {
-
-                window.open(
-                    playlist
-                        .external_urls
-                        .spotify,
-
-                    "_blank"
-                );
+            if (playlist?.external_urls?.spotify) {
+                if (spotifyWindow && !spotifyWindow.closed) {
+                    // Reuse the tab opened directly from the user's click.
+                    // This avoids most browser popup-blocker issues after awaits.
+                    spotifyWindow.location.replace(
+                        playlist.external_urls.spotify
+                    );
+                    spotifyWindow.focus();
+                } else {
+                    // Popup blocking is browser-dependent. The existing
+                    // on-page "Open in Spotify" button remains as a fallback.
+                    setCardMessages((previous) => [
+                        ...previous,
+                        {
+                            sender: "bot",
+                            text: "Your playlist is ready. If Spotify did not open automatically, use the Open Playlist in Spotify button below."
+                        }
+                    ]);
+                }
             }
 
         } catch (err) {
+            if (spotifyWindow && !spotifyWindow.closed) {
+                try {
+                    spotifyWindow.close();
+                } catch (closeError) {
+                    console.warn("Could not close temporary Spotify tab:", closeError);
+                }
+            }
 
             console.error(
                 "Spotify Playlist Error:",
